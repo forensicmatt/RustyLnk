@@ -1,0 +1,33 @@
+use std::fmt;
+use std::fmt::Display;
+use std::io;
+
+#[derive(Debug)]
+pub enum ErrorKind {
+    IoError,
+}
+
+// Lnk Parsing Error
+#[derive(Debug)]
+pub struct LnkError {
+    // Formated error message
+    pub message: String,
+    // The type of error
+    pub kind: ErrorKind,
+    // Any additional information passed along, such as the argument name that caused the error
+    pub info: Option<Vec<String>>,
+}
+
+impl From<io::Error> for LnkError {
+    fn from(err: io::Error) -> Self {
+        LnkError {
+            message: format!("{}",err),
+            kind: ErrorKind::IoError,
+            info: None,
+        }
+    }
+}
+
+impl Display for LnkError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { writeln!(f, "{}", self.message) }
+}

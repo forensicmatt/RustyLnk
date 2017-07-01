@@ -1,0 +1,26 @@
+[package]
+name = "RustyLnk"
+version = "0.0.0"
+authors = ["Matthew Seyer <https://github.com/forensicmatt>"]
+
+[lib]
+name = "rustylnk"
+crate-type = ["cdylib","lib"]
+
+[dependencies]
+clap = "*"
+bitflags = "*"
+serde = "0.9"
+serde_derive = "0.9"
+serde_json = "0.9"
+seek_bufread = "~1.2"
+byteorder = "1"
+
+[dependencies.r-shellitems]
+version = "*"
+path = "../r-shellitems"
+
+[dependencies.r-winstructs]
+version = "*"
+branch = "master"
+git = "https://github.com/forensicmatt/r-winstructs"
