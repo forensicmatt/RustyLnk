@@ -1,4 +1,5 @@
 use rshellitems::errors::{ShellItemError};
+use std::string::FromUtf8Error;
 use std::fmt;
 use std::fmt::Display;
 use std::io;
@@ -6,7 +7,9 @@ use std::io;
 #[derive(Debug)]
 pub enum ErrorKind {
     IoError,
-    ShellItemError
+    ShellItemError,
+    FromUtf8Error,
+    Utf16Error
 }
 
 // Lnk Parsing Error
@@ -20,6 +23,26 @@ pub struct LnkError {
     pub info: Option<Vec<String>>,
 }
 
+impl LnkError {
+    #[allow(dead_code)]
+    pub fn utf16_decode_error(err: String)->Self{
+        LnkError {
+            message: format!("{}",err),
+            kind: ErrorKind::Utf16Error,
+            info: Some(vec![]),
+        }
+    }
+}
+
+impl From<FromUtf8Error> for LnkError {
+    fn from(err: FromUtf8Error) -> Self {
+        LnkError {
+            message: format!("{}",err),
+            kind: ErrorKind::FromUtf8Error,
+            info: None,
+        }
+    }
+}
 impl From<ShellItemError> for LnkError {
     fn from(err: ShellItemError) -> Self {
         LnkError {
