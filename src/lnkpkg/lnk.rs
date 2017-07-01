@@ -87,8 +87,43 @@ impl TargetIdList{
     }
 }
 
+pub struct LocationInfo {
+    pub info_size: u32,
+    pub header_size: u32,
+    pub flags: u32,
+    pub offset_vol_info: u32,
+    pub offset_loc_path: u32,
+    pub offset_net_share: u32,
+    pub offset_common_path: u32
+}
+impl LocationInfo {
+    pub fn new<R: Read>(mut reader: R) -> Result<LocationInfo,LnkError> {
+        let info_size = reader.read_u32::<LittleEndian>()?;
+        let header_size = reader.read_u32::<LittleEndian>()?;
+        let flags = reader.read_u32::<LittleEndian>()?;
+        let offset_vol_info = reader.read_u32::<LittleEndian>()?;
+        let offset_loc_path = reader.read_u32::<LittleEndian>()?;
+        let offset_net_share = reader.read_u32::<LittleEndian>()?;
+        let offset_common_path = reader.read_u32::<LittleEndian>()?;
+
+        Ok (
+            LocationInfo {
+                info_size: info_size,
+                header_size: header_size,
+                flags: flags,
+                offset_vol_info: offset_vol_info,
+                offset_loc_path: offset_loc_path,
+                offset_net_share: offset_net_share,
+                offset_common_path: offset_common_path
+            }
+        )
+    }
+}
+
 pub struct Lnk {
-    pub header: ShellLinkHeader
+    pub header: ShellLinkHeader,
+    pub target_list: TargetIdList,
+    pub location_info: LocationInfo
 }
 
 impl Lnk {
