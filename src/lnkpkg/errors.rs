@@ -1,3 +1,4 @@
+use rshellitems::errors::{ShellItemError};
 use std::fmt;
 use std::fmt::Display;
 use std::io;
@@ -5,6 +6,7 @@ use std::io;
 #[derive(Debug)]
 pub enum ErrorKind {
     IoError,
+    ShellItemError
 }
 
 // Lnk Parsing Error
@@ -18,6 +20,15 @@ pub struct LnkError {
     pub info: Option<Vec<String>>,
 }
 
+impl From<ShellItemError> for LnkError {
+    fn from(err: ShellItemError) -> Self {
+        LnkError {
+            message: format!("{}",err.message),
+            kind: ErrorKind::ShellItemError,
+            info: err.info
+        }
+    }
+}
 impl From<io::Error> for LnkError {
     fn from(err: io::Error) -> Self {
         LnkError {
