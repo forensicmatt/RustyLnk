@@ -1,8 +1,11 @@
 use byteorder::{ReadBytesExt, LittleEndian};
 use rwinstructs::timestamp::{WinTimestamp};
+use rshellitems::shellitem::{ShellItem};
 use lnkpkg::flags::{DataFlags,FileFlags};
 use lnkpkg::errors::{LnkError};
+use std::io::SeekFrom;
 use std::io::Read;
+use std::io::Seek;
 
 #[derive(Clone, Debug)]
 pub struct Guid(pub [u8;16]);
@@ -71,22 +74,45 @@ impl ShellLinkHeader {
     }
 }
 
+#[derive(Debug)]
 pub struct TargetIdList {
-    pub list_size: u16
+    pub list_size: u16,
+    pub shell_items: Vec<ShellItem>
 }
 
 impl TargetIdList{
     pub fn new<R: Read>(mut reader: R) -> Result<TargetIdList, LnkError> {
         let list_size = reader.read_u16::<LittleEndian>()?;
+        let mut shell_items: Vec<ShellItem> = Vec::new();
+
+        let mut total_read: u16 = 0;
+        while total_read < list_size {
+            let mut shell_item = ShellItem::new(&mut reader)?;
+            let size = shell_item.get_size();
+            total_read += size;
+
+            if size == 0 {
+                // Null shell item is terminator
+                break
+            }
+
+            shell_items.push(shell_item);
+        }
 
         Ok(
             TargetIdList {
-                list_size: list_size
+                list_size: list_size,
+                shell_items: shell_items
             }
         )
     }
+
+    pub fn get_size(&self) -> u16 {
+        self.list_size
+    }
 }
 
+#[derive(Debug)]
 pub struct LocationInfo {
     pub info_size: u32,
     pub header_size: u32,
@@ -120,6 +146,7 @@ impl LocationInfo {
     }
 }
 
+#[derive(Debug)]
 pub struct Lnk {
     pub header: ShellLinkHeader,
     pub target_list: TargetIdList,
@@ -127,12 +154,16 @@ pub struct Lnk {
 }
 
 impl Lnk {
-    pub fn new<R: Read>(mut reader: R) -> Result<Lnk,LnkError> {
-        let header = ShellLinkHeader::new(reader)?;
+    pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<Lnk,LnkError> {
+        let header = ShellLinkHeader::new(&mut reader)?;
+        let target_list = TargetIdList::new(&mut reader)?;
+        let location_info = LocationInfo::new(&mut reader)?;
 
         Ok(
             Lnk {
-                header: header
+                header: header,
+                target_list: target_list,
+                location_info: location_info
             }
         )
     }
