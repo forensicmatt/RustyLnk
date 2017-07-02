@@ -5,6 +5,7 @@ use lnkpkg::flags::{DataFlags,FileFlags};
 use lnkpkg::errors::{LnkError};
 use lnkpkg::utils;
 use lnkpkg::volumeinfo::{VolumeInfo};
+use lnkpkg::netshareinfo::{NetworkShareInfo};
 use std::io::SeekFrom;
 use std::io::Read;
 use std::io::Seek;
@@ -150,6 +151,10 @@ impl LocationInfo {
     pub fn get_volume_info_offset(&self) -> u32 {
         self.offset_vol_info
     }
+
+    pub fn get_netshare_info_offset(&self) -> u32 {
+        self.offset_net_share
+    }
 }
 
 #[derive(Debug)]
@@ -157,7 +162,8 @@ pub struct Lnk {
     pub header: ShellLinkHeader,
     pub target_list: TargetIdList,
     pub location_info: LocationInfo,
-    pub volume_info: VolumeInfo
+    pub volume_info: VolumeInfo,
+    pub netshare_info: NetworkShareInfo
 }
 
 impl Lnk {
@@ -179,12 +185,21 @@ impl Lnk {
         )?;
         let volume_info = VolumeInfo::new(&mut reader)?;
 
+        // Seek to network share info
+        reader.seek(
+            SeekFrom::Start(
+                location_offset + location_info.get_netshare_info_offset() as u64
+            )
+        )?;
+        let netshare_info = NetworkShareInfo::new(&mut reader)?;
+
         Ok(
             Lnk {
                 header: header,
                 target_list: target_list,
                 location_info: location_info,
-                volume_info: volume_info
+                volume_info: volume_info,
+                netshare_info: netshare_info
             }
         )
     }
