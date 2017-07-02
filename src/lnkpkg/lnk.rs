@@ -75,6 +75,10 @@ impl ShellLinkHeader {
             }
         )
     }
+
+    pub fn get_data_flags(&self) -> DataFlags {
+        self.data_flags
+    }
 }
 
 #[derive(Debug)]
