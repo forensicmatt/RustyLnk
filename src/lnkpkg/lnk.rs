@@ -1,11 +1,11 @@
 use byteorder::{ReadBytesExt, LittleEndian};
 use rwinstructs::timestamp::{WinTimestamp};
 use rshellitems::shellitem::{ShellItem};
+use lnkpkg::locationinfo::{LocationInfo};
 use lnkpkg::flags::{DataFlags,FileFlags};
+use lnkpkg::flags;
 use lnkpkg::errors::{LnkError};
 use lnkpkg::utils;
-use lnkpkg::volumeinfo::{VolumeInfo};
-use lnkpkg::netshareinfo::{NetworkShareInfo};
 use std::io::SeekFrom;
 use std::io::Read;
 use std::io::Seek;
@@ -120,90 +120,115 @@ impl TargetIdList{
 }
 
 #[derive(Debug)]
-pub struct LocationInfo {
-    pub info_size: u32,
-    pub header_size: u32,
-    pub flags: u32,
-    pub offset_vol_info: u32,
-    pub offset_loc_path: u32,
-    pub offset_net_share: u32,
-    pub offset_common_path: u32
+pub struct DataStrings {
+    pub description: Option<String>,
+    pub relative_path: Option<String>,
+    pub working_directory: Option<String>,
+    pub command_line_args: Option<String>,
+    pub icon_location: Option<String>
 }
-impl LocationInfo {
-    pub fn new<R: Read>(mut reader: R) -> Result<LocationInfo,LnkError> {
-        let info_size = reader.read_u32::<LittleEndian>()?;
-        let header_size = reader.read_u32::<LittleEndian>()?;
-        let flags = reader.read_u32::<LittleEndian>()?;
-        let offset_vol_info = reader.read_u32::<LittleEndian>()?;
-        let offset_loc_path = reader.read_u32::<LittleEndian>()?;
-        let offset_net_share = reader.read_u32::<LittleEndian>()?;
-        let offset_common_path = reader.read_u32::<LittleEndian>()?;
+impl DataStrings {
+    pub fn new<R: Read>(mut reader: R, data_flags: DataFlags) -> Result<DataStrings,LnkError> {
+        let unicode_flag = data_flags.contains(flags::IS_UNICODE);
 
-        Ok (
-            LocationInfo {
-                info_size: info_size,
-                header_size: header_size,
-                flags: flags,
-                offset_vol_info: offset_vol_info,
-                offset_loc_path: offset_loc_path,
-                offset_net_share: offset_net_share,
-                offset_common_path: offset_common_path
+        let mut description = None;
+        if data_flags.contains(flags::HAS_NAME) {
+            if unicode_flag {
+                description = Some(utils::read_string_utf16(&mut reader)?);
+            } else {
+                description = Some(utils::read_string_utf8(&mut reader)?);
+            }
+        }
+
+        let mut relative_path = None;
+        if data_flags.contains(flags::HAS_RELATIVE_PATH) {
+            if unicode_flag {
+                relative_path = Some(utils::read_string_utf16(&mut reader)?);
+            } else {
+                relative_path = Some(utils::read_string_utf8(&mut reader)?);
+            }
+        }
+
+        let mut working_directory = None;
+        if data_flags.contains(flags::HAS_WORKING_DIR) {
+            if unicode_flag {
+                working_directory = Some(utils::read_string_utf16(&mut reader)?);
+            } else {
+                working_directory = Some(utils::read_string_utf8(&mut reader)?);
+            }
+        }
+
+        let mut command_line_args = None;
+        if data_flags.contains(flags::HAS_ARGUMENTS) {
+            if unicode_flag {
+                command_line_args = Some(utils::read_string_utf16(&mut reader)?);
+            } else {
+                command_line_args = Some(utils::read_string_utf8(&mut reader)?);
+            }
+        }
+
+        let mut icon_location = None;
+        if data_flags.contains(flags::HAS_ICON_LOCATION) {
+            if unicode_flag {
+                icon_location = Some(utils::read_string_utf16(&mut reader)?);
+            } else {
+                icon_location = Some(utils::read_string_utf8(&mut reader)?);
+            }
+        }
+
+        Ok(
+            DataStrings {
+                description: description,
+                relative_path: relative_path,
+                working_directory: working_directory,
+                command_line_args: command_line_args,
+                icon_location: icon_location
             }
         )
-    }
-
-    pub fn get_volume_info_offset(&self) -> u32 {
-        self.offset_vol_info
-    }
-
-    pub fn get_netshare_info_offset(&self) -> u32 {
-        self.offset_net_share
     }
 }
 
 #[derive(Debug)]
 pub struct Lnk {
     pub header: ShellLinkHeader,
-    pub target_list: TargetIdList,
-    pub location_info: LocationInfo,
-    pub volume_info: VolumeInfo,
-    pub netshare_info: NetworkShareInfo
+    pub target_list: Option<TargetIdList>,
+    pub location_info: Option<LocationInfo>,
+    pub data_strings: DataStrings
 }
 
 impl Lnk {
     pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<Lnk,LnkError> {
         let header = ShellLinkHeader::new(&mut reader)?;
-        let target_list = TargetIdList::new(&mut reader)?;
+        let header_flags = header.get_data_flags();
 
-        let location_offset = reader.seek(
+        let mut target_list = None;
+        if header_flags.contains(flags::HAS_TARGET_ID_LIST) {
+            target_list = Some(TargetIdList::new(&mut reader)?);
+        }
+
+        let mut location_offset = reader.seek(
             SeekFrom::Current(0)
         )?;
 
-        let location_info = LocationInfo::new(&mut reader)?;
+        let mut location_info = None;
+        if header_flags.contains(flags::HAS_LINK_INFO) {
+            location_info = Some(LocationInfo::new(&mut reader)?);
+        }
 
-        // Seek to volume info
-        reader.seek(
-            SeekFrom::Start(
-                location_offset + location_info.get_volume_info_offset() as u64
-            )
+        println!("offset: {}",reader.seek(
+            SeekFrom::Current(0)
+        )?);
+        let data_strings = DataStrings::new(
+            &mut reader,
+            header_flags
         )?;
-        let volume_info = VolumeInfo::new(&mut reader)?;
-
-        // Seek to network share info
-        reader.seek(
-            SeekFrom::Start(
-                location_offset + location_info.get_netshare_info_offset() as u64
-            )
-        )?;
-        let netshare_info = NetworkShareInfo::new(&mut reader)?;
 
         Ok(
             Lnk {
                 header: header,
                 target_list: target_list,
                 location_info: location_info,
-                volume_info: volume_info,
-                netshare_info: netshare_info
+                data_strings: data_strings
             }
         )
     }

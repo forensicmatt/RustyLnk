@@ -4,3 +4,4 @@ pub mod flags;
 pub mod utils;
 pub mod volumeinfo;
 pub mod netshareinfo;
+pub mod locationinfo;
