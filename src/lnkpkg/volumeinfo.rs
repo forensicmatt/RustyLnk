@@ -21,7 +21,7 @@ pub struct VolumeInfo {
 impl VolumeInfo {
     pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<VolumeInfo,LnkError> {
         // Get Current Pos
-        let cur_pos = reader.seek(
+        let _offset = reader.seek(
             SeekFrom::Current(0)
         )?;
 
@@ -35,28 +35,18 @@ impl VolumeInfo {
             offset_vol_label_unicode = Some(reader.read_u32::<LittleEndian>()?);
         }
 
-        // Go back to start of VolumeInfo
-        reader.seek(
-            SeekFrom::Start(cur_pos + offset_vol_label as u64)
-        )?;
-
         // Get volume label
-        let volume_label = String::from_utf8(
-            utils::get_u8_vec(&mut reader)?
+        reader.seek(
+            SeekFrom::Start(_offset + offset_vol_label as u64)
         )?;
+        let volume_label = utils::read_string_u8_till_null(&mut reader)?;
 
         let mut volume_label_unicode = None;
         if offset_vol_label_unicode.is_some() {
-            let utf16_buffer = utils::get_u8_vec_utf16(&mut reader)?;
-            let utf16_string = match UTF_16LE.decode(&utf16_buffer.as_slice(),DecoderTrap::Ignore) {
-                Ok(utf16) => utf16,
-                Err(error) => return Err(
-                    LnkError::utf16_decode_error(
-                        format!("Error decoding name in volume_label_unicode field. [{}]",error)
-                    )
-                )
-            };
-            volume_label_unicode = Some(utf16_string);
+            reader.seek(
+                SeekFrom::Start(_offset + offset_vol_label_unicode.unwrap() as u64)
+            )?;
+            volume_label_unicode = Some(utils::read_string_u16_till_null(&mut reader)?);
         }
 
         Ok(
