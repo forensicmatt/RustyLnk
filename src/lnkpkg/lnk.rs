@@ -134,45 +134,45 @@ impl DataStrings {
         let mut description = None;
         if data_flags.contains(flags::HAS_NAME) {
             if unicode_flag {
-                description = Some(utils::read_string_utf16(&mut reader)?);
+                description = Some(utils::read_string_u16_w_size(&mut reader)?);
             } else {
-                description = Some(utils::read_string_utf8(&mut reader)?);
+                description = Some(utils::read_string_u8_w_size(&mut reader)?);
             }
         }
 
         let mut relative_path = None;
         if data_flags.contains(flags::HAS_RELATIVE_PATH) {
             if unicode_flag {
-                relative_path = Some(utils::read_string_utf16(&mut reader)?);
+                relative_path = Some(utils::read_string_u16_w_size(&mut reader)?);
             } else {
-                relative_path = Some(utils::read_string_utf8(&mut reader)?);
+                relative_path = Some(utils::read_string_u8_w_size(&mut reader)?);
             }
         }
 
         let mut working_directory = None;
         if data_flags.contains(flags::HAS_WORKING_DIR) {
             if unicode_flag {
-                working_directory = Some(utils::read_string_utf16(&mut reader)?);
+                working_directory = Some(utils::read_string_u16_w_size(&mut reader)?);
             } else {
-                working_directory = Some(utils::read_string_utf8(&mut reader)?);
+                working_directory = Some(utils::read_string_u8_w_size(&mut reader)?);
             }
         }
 
         let mut command_line_args = None;
         if data_flags.contains(flags::HAS_ARGUMENTS) {
             if unicode_flag {
-                command_line_args = Some(utils::read_string_utf16(&mut reader)?);
+                command_line_args = Some(utils::read_string_u16_w_size(&mut reader)?);
             } else {
-                command_line_args = Some(utils::read_string_utf8(&mut reader)?);
+                command_line_args = Some(utils::read_string_u8_w_size(&mut reader)?);
             }
         }
 
         let mut icon_location = None;
         if data_flags.contains(flags::HAS_ICON_LOCATION) {
             if unicode_flag {
-                icon_location = Some(utils::read_string_utf16(&mut reader)?);
+                icon_location = Some(utils::read_string_u16_w_size(&mut reader)?);
             } else {
-                icon_location = Some(utils::read_string_utf8(&mut reader)?);
+                icon_location = Some(utils::read_string_u8_w_size(&mut reader)?);
             }
         }
 
