@@ -47,8 +47,8 @@ impl VolumeInfo {
 
         let mut volume_label_unicode = None;
         if offset_vol_label_unicode.is_some() {
-            let utf16_buffer = utils::get_u8_vec(&mut reader)?;
-            let utf16_string = match UTF_16LE.decode(&utf16_buffer,DecoderTrap::Ignore) {
+            let utf16_buffer = utils::get_u8_vec_utf16(&mut reader)?;
+            let utf16_string = match UTF_16LE.decode(&utf16_buffer.as_slice(),DecoderTrap::Ignore) {
                 Ok(utf16) => utf16,
                 Err(error) => return Err(
                     LnkError::utf16_decode_error(
