@@ -6,7 +6,6 @@ use lnkpkg::flags::{DataFlags,FileFlags};
 use lnkpkg::flags;
 use lnkpkg::errors::{LnkError};
 use lnkpkg::utils;
-use std::io::SeekFrom;
 use std::io::Read;
 use std::io::Seek;
 
@@ -94,7 +93,7 @@ impl TargetIdList{
 
         let mut total_read: u16 = 0;
         while total_read < list_size {
-            let mut shell_item = ShellItem::new(&mut reader)?;
+            let shell_item = ShellItem::new(&mut reader)?;
             let size = shell_item.get_size();
             total_read += size;
 

@@ -1,5 +1,3 @@
-use encoding::all::UTF_16LE;
-use encoding::{Encoding, DecoderTrap};
 use byteorder::{ReadBytesExt, LittleEndian};
 use lnkpkg::errors::{LnkError};
 use lnkpkg::utils;
