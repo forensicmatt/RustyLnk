@@ -44,35 +44,20 @@ impl NetworkShareInfo {
         reader.seek(
             SeekFrom::Start(cur_pos + offset_share_name as u64)
         )?;
-        // Get share name
-        let share_name = String::from_utf8(
-            utils::get_u8_vec(&mut reader)?
-        )?;
+        let share_name = utils::read_string_u8_till_null(&mut reader)?;
 
         reader.seek(
             SeekFrom::Start(cur_pos + offset_device_name as u64)
         )?;
         // Get device name
-        let device_name = String::from_utf8(
-            utils::get_u8_vec(&mut reader)?
-        )?;
+        let device_name = utils::read_string_u8_till_null(&mut reader)?;
 
         let mut share_name_unicode = None;
         if offset_share_name_unicode.is_some() {
             reader.seek(
                 SeekFrom::Start(cur_pos + offset_share_name_unicode.unwrap() as u64)
             )?;
-
-            let utf16_buffer = utils::get_u8_vec_utf16(&mut reader)?;
-            let utf16_string = match UTF_16LE.decode(&utf16_buffer,DecoderTrap::Ignore) {
-                Ok(utf16) => utf16,
-                Err(error) => return Err(
-                    LnkError::utf16_decode_error(
-                        format!("Error decoding name in share_name_unicode field. [{}]",error)
-                    )
-                )
-            };
-            share_name_unicode = Some(utf16_string);
+            share_name_unicode = Some(utils::read_string_u16_till_null(&mut reader)?);
         }
 
         let mut device_name_unicode = None;
@@ -80,17 +65,7 @@ impl NetworkShareInfo {
             reader.seek(
                 SeekFrom::Start(cur_pos + offset_device_name_unicode.unwrap() as u64)
             )?;
-
-            let utf16_buffer = utils::get_u8_vec_utf16(&mut reader)?;
-            let utf16_string = match UTF_16LE.decode(&utf16_buffer.as_slice(),DecoderTrap::Ignore) {
-                Ok(utf16) => utf16,
-                Err(error) => return Err(
-                    LnkError::utf16_decode_error(
-                        format!("Error decoding name in device_name_unicode field. [{}]",error)
-                    )
-                )
-            };
-            device_name_unicode = Some(utf16_string);
+            device_name_unicode = Some(utils::read_string_u16_till_null(&mut reader)?);
         }
 
         Ok(
