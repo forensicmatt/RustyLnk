@@ -7,6 +7,41 @@ use std::io::Read;
 use std::io::Seek;
 
 #[derive(Debug)]
+pub struct SpecialFolder {
+    special_folder_id: u32,
+    first_child_segment_offset: u32
+}
+impl SpecialFolder {
+    pub fn new<R: Read>(mut reader: R) -> Result<SpecialFolder,LnkError> {
+        let special_folder_id = reader.read_u32::<LittleEndian>()?;
+        let first_child_segment_offset = reader.read_u32::<LittleEndian>()?;
+
+        Ok (
+            SpecialFolder {
+                special_folder_id: special_folder_id,
+                first_child_segment_offset: first_child_segment_offset
+            }
+        )
+    }
+}
+
+#[derive(Debug)]
+pub struct Codepage {
+    codepage: u32
+}
+impl Codepage {
+    pub fn new<R: Read>(mut reader: R) -> Result<Codepage,LnkError> {
+        let codepage = reader.read_u32::<LittleEndian>()?;
+
+        Ok (
+            Codepage {
+                codepage: codepage
+            }
+        )
+    }
+}
+
+#[derive(Debug)]
 pub struct DistributedTracker {
     size: u32,
     version: u32,
@@ -165,13 +200,17 @@ impl ConsoleProperties {
 pub struct ExtraDataBlocks {
     pub console_properties: Option<ConsoleProperties>,
     pub environment_vars: Option<EnvironmentVars>,
-    pub distributed_tracker: Option<DistributedTracker>
+    pub distributed_tracker: Option<DistributedTracker>,
+    pub codepage: Option<Codepage>,
+    pub special_folder: Option<SpecialFolder>
 }
 impl ExtraDataBlocks {
     pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<ExtraDataBlocks,LnkError> {
         let mut console_properties = None;
         let mut environment_vars = None;
         let mut distributed_tracker = None;
+        let mut codepage = None;
+        let mut special_folder = None;
 
         let mut _offset = reader.seek(
             SeekFrom::Current(0)
@@ -190,6 +229,12 @@ impl ExtraDataBlocks {
                     },
                     0xa0000003 => {
                         distributed_tracker = Some(DistributedTracker::new(&mut reader)?);
+                    },
+                    0xa0000004 => {
+                        codepage = Some(Codepage::new(&mut reader)?);
+                    },
+                    0xa0000005 => {
+                        special_folder = Some(SpecialFolder::new(&mut reader)?);
                     },
                     _ => {
                         println!(
@@ -214,7 +259,9 @@ impl ExtraDataBlocks {
             ExtraDataBlocks {
                 console_properties: console_properties,
                 environment_vars: environment_vars,
-                distributed_tracker: distributed_tracker
+                distributed_tracker: distributed_tracker,
+                codepage: codepage,
+                special_folder: special_folder
             }
         )
     }
