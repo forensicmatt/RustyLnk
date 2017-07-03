@@ -22,6 +22,6 @@ version = "*"
 path = "../r-shellitems"
 
 [dependencies.r-winstructs]
-version = "*"
+version = "0.1.2"
 branch = "master"
 git = "https://github.com/forensicmatt/r-winstructs"
