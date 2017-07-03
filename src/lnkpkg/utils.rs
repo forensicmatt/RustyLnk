@@ -5,6 +5,32 @@ use lnkpkg::errors::{LnkError};
 use std::io::Read;
 use std::io::Error;
 use std::slice;
+use std::fmt;
+
+pub struct ByteArray(pub Vec<u8>);
+impl fmt::Debug for ByteArray {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{:?}",
+            to_hex_string(&self.0),
+        )
+    }
+}
+// impl ser::Serialize for ByteArray {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//         where S: ser::Serializer
+//     {
+//         serializer.serialize_str(&format!("{}", to_hex_string(&self.0)))
+//     }
+// }
+
+pub fn to_hex_string(bytes: &Vec<u8>) -> String {
+    let strs: Vec<String> = bytes.iter()
+        .map(|b| format!("{:02X}", b))
+        .collect();
+    strs.join("")
+}
 
 pub fn read_string_u8_w_size<R: Read>(mut reader: R) -> Result<String,LnkError> {
     // Reads into a string with the size preceeding the string
