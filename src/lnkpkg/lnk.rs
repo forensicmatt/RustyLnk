@@ -1,16 +1,15 @@
 use byteorder::{ReadBytesExt, LittleEndian};
 use rwinstructs::timestamp::{WinTimestamp};
+use rwinstructs::guid::{Guid};
 use rshellitems::shellitem::{ShellItem};
 use lnkpkg::locationinfo::{LocationInfo};
+use lnkpkg::datablocks::{ExtraDataBlocks};
 use lnkpkg::flags::{DataFlags,FileFlags};
 use lnkpkg::flags;
 use lnkpkg::errors::{LnkError};
 use lnkpkg::utils;
 use std::io::Read;
 use std::io::Seek;
-
-#[derive(Clone, Debug)]
-pub struct Guid(pub [u8;16]);
 
 #[derive(Debug)]
 // 76 bytes long
@@ -192,7 +191,8 @@ pub struct Lnk {
     pub header: ShellLinkHeader,
     pub target_list: Option<TargetIdList>,
     pub location_info: Option<LocationInfo>,
-    pub data_strings: DataStrings
+    pub data_strings: DataStrings,
+    pub extra_data: ExtraDataBlocks
 }
 
 impl Lnk {
@@ -218,12 +218,15 @@ impl Lnk {
             header_flags
         )?;
 
+        let extra_data = ExtraDataBlocks::new(&mut reader)?;
+
         Ok(
             Lnk {
                 header: header,
                 target_list: target_list,
                 location_info: location_info,
-                data_strings: data_strings
+                data_strings: data_strings,
+                extra_data: extra_data
             }
         )
     }
