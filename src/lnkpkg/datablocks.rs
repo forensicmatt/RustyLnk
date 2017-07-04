@@ -7,6 +7,81 @@ use std::io::Read;
 use std::io::Seek;
 
 #[derive(Debug)]
+pub struct KnownFolderLocation {
+    folder_guid: Guid,
+    first_child_segment_offset: u32
+}
+impl KnownFolderLocation {
+    pub fn new<R: Read>(mut reader: R) -> Result<KnownFolderLocation,LnkError> {
+        let folder_guid = Guid::new(&mut reader)?;
+        let first_child_segment_offset = reader.read_u32::<LittleEndian>()?;
+
+        Ok (
+            KnownFolderLocation {
+                folder_guid: folder_guid,
+                first_child_segment_offset: first_child_segment_offset
+            }
+        )
+    }
+}
+
+#[derive(Debug)]
+pub struct IconLocation {
+    icon_location: String,
+    icon_location_unicode: String,
+}
+impl IconLocation {
+    pub fn new<R: Read>(mut reader: R) -> Result<IconLocation,LnkError> {
+        let mut icon_location_buffer = vec![0; 260];
+        reader.read_exact(icon_location_buffer.as_mut_slice())?;
+        let icon_location = utils::read_string_u8_till_null(
+            icon_location_buffer.as_slice()
+        )?;
+
+        let mut icon_location_unicode_buffer = vec![0; 520];
+        reader.read_exact(icon_location_unicode_buffer.as_mut_slice())?;
+        let icon_location_unicode = utils::read_string_u8_till_null(
+            icon_location_unicode_buffer.as_slice()
+        )?;
+
+        Ok (
+            IconLocation {
+                icon_location: icon_location,
+                icon_location_unicode: icon_location_unicode
+            }
+        )
+    }
+}
+
+#[derive(Debug)]
+pub struct DarwinProperties {
+    darwin_app_id: String,
+    darwin_app_id_unicode: String
+}
+impl DarwinProperties {
+    pub fn new<R: Read>(mut reader: R) -> Result<DarwinProperties,LnkError> {
+        let mut darwin_app_id_buffer = vec![0; 260];
+        reader.read_exact(darwin_app_id_buffer.as_mut_slice())?;
+        let darwin_app_id = utils::read_string_u8_till_null(
+            darwin_app_id_buffer.as_slice()
+        )?;
+
+        let mut darwin_app_id_unicode_buffer = vec![0; 520];
+        reader.read_exact(darwin_app_id_unicode_buffer.as_mut_slice())?;
+        let darwin_app_id_unicode = utils::read_string_u8_till_null(
+            darwin_app_id_unicode_buffer.as_slice()
+        )?;
+
+        Ok (
+            DarwinProperties {
+                darwin_app_id: darwin_app_id,
+                darwin_app_id_unicode: darwin_app_id_unicode
+            }
+        )
+    }
+}
+
+#[derive(Debug)]
 pub struct SpecialFolder {
     special_folder_id: u32,
     first_child_segment_offset: u32
@@ -202,7 +277,10 @@ pub struct ExtraDataBlocks {
     pub environment_vars: Option<EnvironmentVars>,
     pub distributed_tracker: Option<DistributedTracker>,
     pub codepage: Option<Codepage>,
-    pub special_folder: Option<SpecialFolder>
+    pub special_folder: Option<SpecialFolder>,
+    pub darwin_properties: Option<DarwinProperties>,
+    pub icon_location: Option<IconLocation>,
+    pub known_folder: Option<KnownFolderLocation>
 }
 impl ExtraDataBlocks {
     pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<ExtraDataBlocks,LnkError> {
@@ -211,6 +289,9 @@ impl ExtraDataBlocks {
         let mut distributed_tracker = None;
         let mut codepage = None;
         let mut special_folder = None;
+        let mut darwin_properties = None;
+        let mut icon_location = None;
+        let mut known_folder = None;
 
         let mut _offset = reader.seek(
             SeekFrom::Current(0)
@@ -235,6 +316,15 @@ impl ExtraDataBlocks {
                     },
                     0xa0000005 => {
                         special_folder = Some(SpecialFolder::new(&mut reader)?);
+                    },
+                    0xa0000006 => {
+                        darwin_properties = Some(DarwinProperties::new(&mut reader)?);
+                    },
+                    0xa0000007 => {
+                        icon_location = Some(IconLocation::new(&mut reader)?);
+                    },
+                    0xa000000b => {
+                        known_folder = Some(KnownFolderLocation::new(&mut reader)?);
                     },
                     _ => {
                         println!(
@@ -261,7 +351,10 @@ impl ExtraDataBlocks {
                 environment_vars: environment_vars,
                 distributed_tracker: distributed_tracker,
                 codepage: codepage,
-                special_folder: special_folder
+                special_folder: special_folder,
+                darwin_properties: darwin_properties,
+                icon_location: icon_location,
+                known_folder: known_folder
             }
         )
     }
