@@ -6,7 +6,23 @@ use std::io::SeekFrom;
 use std::io::Read;
 use std::io::Seek;
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
+pub struct ShimLayerProperties {
+    name: String,
+}
+impl ShimLayerProperties {
+    pub fn new<R: Read>(mut reader: R) -> Result<ShimLayerProperties,LnkError> {
+        let name = utils::read_string_u16_till_null(reader)?;
+
+        Ok (
+            ShimLayerProperties {
+                name: name
+            }
+        )
+    }
+}
+
+#[derive(Serialize,Debug)]
 pub struct KnownFolderLocation {
     folder_guid: Guid,
     first_child_segment_offset: u32
@@ -25,7 +41,7 @@ impl KnownFolderLocation {
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct IconLocation {
     icon_location: String,
     icon_location_unicode: String,
@@ -53,7 +69,7 @@ impl IconLocation {
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct DarwinProperties {
     darwin_app_id: String,
     darwin_app_id_unicode: String
@@ -81,7 +97,7 @@ impl DarwinProperties {
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct SpecialFolder {
     special_folder_id: u32,
     first_child_segment_offset: u32
@@ -100,7 +116,7 @@ impl SpecialFolder {
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct Codepage {
     codepage: u32
 }
@@ -116,7 +132,7 @@ impl Codepage {
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct DistributedTracker {
     size: u32,
     version: u32,
@@ -156,7 +172,7 @@ impl DistributedTracker {
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct EnvironmentVars {
     location: String, //size is 260 bytes (Unicode string terminated by an end-of-string character)
     location_unicode: String //size is 520 bytes (Unicode string terminated by an end-of-string character)
@@ -184,7 +200,7 @@ impl EnvironmentVars {
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct ConsoleProperties {
     color_flags: u16,
     popup_attribs: u16,
@@ -271,7 +287,7 @@ impl ConsoleProperties {
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct ExtraDataBlocks {
     pub console_properties: Option<ConsoleProperties>,
     pub environment_vars: Option<EnvironmentVars>,
@@ -280,6 +296,7 @@ pub struct ExtraDataBlocks {
     pub special_folder: Option<SpecialFolder>,
     pub darwin_properties: Option<DarwinProperties>,
     pub icon_location: Option<IconLocation>,
+    pub shim_layer: Option<ShimLayerProperties>,
     pub known_folder: Option<KnownFolderLocation>
 }
 impl ExtraDataBlocks {
@@ -292,6 +309,7 @@ impl ExtraDataBlocks {
         let mut darwin_properties = None;
         let mut icon_location = None;
         let mut known_folder = None;
+        let mut shim_layer = None;
 
         let mut _offset = reader.seek(
             SeekFrom::Current(0)
@@ -322,6 +340,9 @@ impl ExtraDataBlocks {
                     },
                     0xa0000007 => {
                         icon_location = Some(IconLocation::new(&mut reader)?);
+                    },
+                    0xa0000008 => {
+                        shim_layer = Some(ShimLayerProperties::new(&mut reader)?);
                     },
                     0xa000000b => {
                         known_folder = Some(KnownFolderLocation::new(&mut reader)?);
@@ -354,6 +375,7 @@ impl ExtraDataBlocks {
                 special_folder: special_folder,
                 darwin_properties: darwin_properties,
                 icon_location: icon_location,
+                shim_layer: shim_layer,
                 known_folder: known_folder
             }
         )

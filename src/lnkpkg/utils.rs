@@ -2,6 +2,7 @@ use byteorder::{ReadBytesExt, LittleEndian};
 use encoding::all::UTF_16LE;
 use encoding::{Encoding, DecoderTrap};
 use lnkpkg::errors::{LnkError};
+use serde::{ser};
 use std::io::Read;
 use std::io::Error;
 use std::slice;
@@ -17,13 +18,13 @@ impl fmt::Debug for ByteArray {
         )
     }
 }
-// impl ser::Serialize for ByteArray {
-//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-//         where S: ser::Serializer
-//     {
-//         serializer.serialize_str(&format!("{}", to_hex_string(&self.0)))
-//     }
-// }
+impl ser::Serialize for ByteArray {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: ser::Serializer
+    {
+        serializer.serialize_str(&format!("{}", to_hex_string(&self.0)))
+    }
+}
 
 pub fn to_hex_string(bytes: &Vec<u8>) -> String {
     let strs: Vec<String> = bytes.iter()

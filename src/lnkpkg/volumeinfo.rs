@@ -5,7 +5,7 @@ use std::io::SeekFrom;
 use std::io::Read;
 use std::io::Seek;
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct VolumeInfo {
     pub vi_size: u32,
     pub drive_type: u32,

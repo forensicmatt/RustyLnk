@@ -7,7 +7,7 @@ use std::io::SeekFrom;
 use std::io::Read;
 use std::io::Seek;
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct LocationInfo {
     info_size: u32,
     header_size: u32,

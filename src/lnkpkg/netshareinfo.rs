@@ -5,7 +5,7 @@ use std::io::SeekFrom;
 use std::io::Read;
 use std::io::Seek;
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct NetworkShareInfo {
     pub size: u32,
     pub flags: u32,

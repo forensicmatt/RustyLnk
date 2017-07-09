@@ -11,8 +11,8 @@ use lnkpkg::utils;
 use std::io::Read;
 use std::io::Seek;
 
-#[derive(Debug)]
-// 76 bytes long
+#[derive(Serialize,Debug)]
+// 76 bytes long,
 pub struct ShellLinkHeader {
     pub header_size: u32,
     pub guid: Guid,
@@ -29,7 +29,6 @@ pub struct ShellLinkHeader {
     pub unknown2: u32,
     pub unknown3: u32
 }
-
 impl ShellLinkHeader {
     pub fn new<R: Read>(mut reader: R) -> Result<ShellLinkHeader,LnkError> {
         let header_size = reader.read_u32::<LittleEndian>()?;
@@ -79,7 +78,7 @@ impl ShellLinkHeader {
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct TargetIdList {
     pub list_size: u16,
     pub shell_items: Vec<ShellItem>
@@ -117,7 +116,7 @@ impl TargetIdList{
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct DataStrings {
     pub description: Option<String>,
     pub relative_path: Option<String>,
@@ -186,7 +185,7 @@ impl DataStrings {
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize,Debug)]
 pub struct Lnk {
     pub header: ShellLinkHeader,
     pub target_list: Option<TargetIdList>,

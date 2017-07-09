@@ -1,7 +1,11 @@
 extern crate rustylnk;
 extern crate clap;
 extern crate seek_bufread;
+extern crate jmespath;
+extern crate serde_json;
+extern crate serde;
 use clap::{App, Arg, ArgMatches};
+use jmespath::{Expression};
 use seek_bufread::BufReader;
 use rustylnk::lnkpkg::lnk::{Lnk};
 use std::fs;
@@ -20,6 +24,20 @@ fn process_directory(directory: &str, options: &ArgMatches) {
 }
 
 fn process_file(filename: &str, options: &ArgMatches) -> bool {
+    // JMES Expression if needed
+    let mut expr: Option<Expression> = None;
+    if options.is_present("query") {
+        expr = Some(jmespath::compile(
+            options.value_of("query").unwrap()
+        ).unwrap());
+    }
+
+    // Expression bool flag
+    let mut expr_as_bool = false;
+    if options.is_present("bool_expr"){
+        expr_as_bool = true;
+    }
+
     let mut file = match fs::File::open(filename) {
         Ok(file) => file,
         Err(error) => {
@@ -38,7 +56,31 @@ fn process_file(filename: &str, options: &ArgMatches) -> bool {
         }
     };
 
-    println!("{:#?}",lnk);
+    let json_str = serde_json::to_string(&lnk).unwrap();
+    match expr {
+        Some(ref j_expr) => {
+            let data = jmespath::Variable::from_json(&json_str).unwrap();
+            let result = j_expr.search(data).unwrap();
+            if expr_as_bool {
+                match result.as_boolean() {
+                    Some(bool_value) => {
+                        match bool_value {
+                            true => println!("{}",json_str),
+                            false => {}
+                        }
+                    },
+                    None => {
+                        panic!("Query expression is not a bool expression!");
+                    }
+                }
+            } else {
+                println!("{}",result)
+            }
+        },
+        None => {
+            println!("{}",json_str);
+        }
+    }
 
     return true;
 }
@@ -59,11 +101,25 @@ fn main() {
         .help("The LNK file or folder with LNK files to parse.")
         .takes_value(true);
 
+    let jmes_arg = Arg::with_name("query")
+        .short("q")
+        .long("query")
+        .value_name("QUERY")
+        .help("JMES Query")
+        .takes_value(true);
+
+    let bool_arg = Arg::with_name("bool_expr")
+        .short("b")
+        .long("bool_expr")
+        .help("JMES Query as bool only. (Prints whole record if true.)");
+
     let options = App::new("RusyLnk")
         .version("0.0.0")
         .author("Matthew Seyer <https://github.com/forensicmatt/RustyUsn>")
         .about("LNK Parser written in Rust.")
-        .arg(source_arg)   // add the journal parameter
+        .arg(source_arg)
+        .arg(jmes_arg)
+        .arg(bool_arg)
         .get_matches();
 
     let source = options.value_of("source").unwrap();
