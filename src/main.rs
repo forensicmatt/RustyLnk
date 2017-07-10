@@ -1,3 +1,5 @@
+#[macro_use] extern crate log;
+extern crate env_logger;
 extern crate rustylnk;
 extern crate clap;
 extern crate seek_bufread;
@@ -38,20 +40,21 @@ fn process_file(filename: &str, options: &ArgMatches) -> bool {
         expr_as_bool = true;
     }
 
-    let mut file = match fs::File::open(filename) {
+    let file = match fs::File::open(filename) {
         Ok(file) => file,
         Err(error) => {
-            println!("Could not open file: {} [error: {}]", filename, error);
+            error!("Could not open file: {} [error: {}]", filename, error);
             return false;
         }
     };
 
-    let mut reader = BufReader::new(file);
+    let reader = BufReader::new(file);
 
+    info!("Parsing file: {}",filename);
     let lnk = match Lnk::new(reader) {
         Ok(lnk) => lnk,
         Err(error) => {
-            println!("Could not parse file: {} [error: {}]", filename, error);
+            error!("Could not parse file: {} [error: {}]", filename, error);
             return false;
         }
     };
@@ -70,7 +73,7 @@ fn process_file(filename: &str, options: &ArgMatches) -> bool {
                         }
                     },
                     None => {
-                        panic!("Query expression is not a bool expression!");
+                        error!("Query expression is not a bool expression! [{}]",options.value_of("query").unwrap());
                     }
                 }
             } else {
@@ -94,6 +97,8 @@ fn is_directory(source: &str)->bool{
 }
 
 fn main() {
+    env_logger::init().unwrap();
+
     let source_arg = Arg::with_name("source")
         .short("s")
         .long("source")
