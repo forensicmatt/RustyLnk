@@ -18,9 +18,7 @@ fn process_directory(directory: &str, options: &ArgMatches) {
         let path = entry.path();
         if path.is_file() {
             let path_string = path.into_os_string().into_string().unwrap();
-            if path_string.ends_with(".lnk"){
-                process_file(&path_string, &options);
-            }
+            process_file(&path_string, &options);
         }
     }
 }
