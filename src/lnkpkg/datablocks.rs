@@ -288,16 +288,33 @@ impl ConsoleProperties {
 }
 
 #[derive(Serialize,Debug)]
+pub struct UnhandledDataBlock {
+    signature: String,
+    buffer: utils::ByteArray
+}
+
+#[derive(Serialize,Debug)]
 pub struct ExtraDataBlocks {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub console_properties: Option<ConsoleProperties>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub environment_vars: Option<EnvironmentVars>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub distributed_tracker: Option<DistributedTracker>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub codepage: Option<Codepage>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub special_folder: Option<SpecialFolder>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub darwin_properties: Option<DarwinProperties>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub icon_location: Option<IconLocation>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub shim_layer: Option<ShimLayerProperties>,
-    pub known_folder: Option<KnownFolderLocation>
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub known_folder: Option<KnownFolderLocation>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unhandled_blocks: Option<Vec<UnhandledDataBlock>>
 }
 impl ExtraDataBlocks {
     pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<ExtraDataBlocks,LnkError> {
@@ -310,6 +327,7 @@ impl ExtraDataBlocks {
         let mut icon_location = None;
         let mut known_folder = None;
         let mut shim_layer = None;
+        let mut unhandled_blocks = None;
 
         let mut _offset = reader.seek(
             SeekFrom::Current(0)
@@ -348,9 +366,25 @@ impl ExtraDataBlocks {
                         known_folder = Some(KnownFolderLocation::new(&mut reader)?);
                     },
                     _ => {
-                        println!(
+                        let mut unknown_block_buffer = vec![0; size as usize];
+                        reader.read_exact(unknown_block_buffer.as_mut_slice())?;
+                        let unknown_block = UnhandledDataBlock {
+                            signature: format!("0x{:04X}",signature),
+                            buffer: utils::ByteArray(unknown_block_buffer)
+                        };
+
+                        if unhandled_blocks.is_some() {
+                            // unhandled_blocks.as_mut().unwrap().push(unknown_block);
+                            let mut x: &mut Vec<UnhandledDataBlock> = unhandled_blocks.as_mut().unwrap();
+                            x.push(unknown_block);
+                        } else {
+                            unhandled_blocks = Some(Vec::new());
+                            unhandled_blocks.as_mut().unwrap().push(unknown_block);
+                        }
+
+                        warn!(
                             "Unhandled data block with signature {} at offset {}",
-                            signature,
+                            format!("0x{:04X}",signature),
                             _offset
                         );
                     }
@@ -376,7 +410,8 @@ impl ExtraDataBlocks {
                 darwin_properties: darwin_properties,
                 icon_location: icon_location,
                 shim_layer: shim_layer,
-                known_folder: known_folder
+                known_folder: known_folder,
+                unhandled_blocks: unhandled_blocks
             }
         )
     }
