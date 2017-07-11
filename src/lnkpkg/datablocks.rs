@@ -1,10 +1,27 @@
 use byteorder::{ReadBytesExt, LittleEndian};
+use rshellitems::shelllist::{ShellList};
 use lnkpkg::errors::{LnkError};
 use lnkpkg::utils;
 use rwinstructs::guid::{Guid};
 use std::io::SeekFrom;
 use std::io::Read;
 use std::io::Seek;
+
+#[derive(Serialize,Debug)]
+pub struct ShellItemIds {
+    shell_items: ShellList
+}
+impl ShellItemIds {
+    pub fn new<R: Read>(mut reader: R) -> Result<ShellItemIds,LnkError> {
+        let shell_items = ShellList::new(&mut reader)?;
+
+        Ok (
+            ShellItemIds {
+                shell_items: shell_items
+            }
+        )
+    }
+}
 
 #[derive(Serialize,Debug)]
 pub struct ShimLayerProperties {
@@ -314,6 +331,8 @@ pub struct ExtraDataBlocks {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub known_folder: Option<KnownFolderLocation>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub shell_item_ids: Option<ShellItemIds>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub unhandled_blocks: Option<Vec<UnhandledDataBlock>>
 }
 impl ExtraDataBlocks {
@@ -328,6 +347,7 @@ impl ExtraDataBlocks {
         let mut known_folder = None;
         let mut shim_layer = None;
         let mut unhandled_blocks = None;
+        let mut shell_item_ids = None;
 
         let mut _offset = reader.seek(
             SeekFrom::Current(0)
@@ -364,6 +384,9 @@ impl ExtraDataBlocks {
                     },
                     0xa000000b => {
                         known_folder = Some(KnownFolderLocation::new(&mut reader)?);
+                    },
+                    0xa000000c => {
+                        shell_item_ids = Some(ShellItemIds::new(&mut reader)?);
                     },
                     _ => {
                         let mut unknown_block_buffer = vec![0; size as usize];
@@ -411,6 +434,7 @@ impl ExtraDataBlocks {
                 icon_location: icon_location,
                 shim_layer: shim_layer,
                 known_folder: known_folder,
+                shell_item_ids: shell_item_ids,
                 unhandled_blocks: unhandled_blocks
             }
         )
