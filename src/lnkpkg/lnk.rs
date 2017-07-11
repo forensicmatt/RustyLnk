@@ -2,6 +2,7 @@ use byteorder::{ReadBytesExt, LittleEndian};
 use rwinstructs::timestamp::{WinTimestamp};
 use rwinstructs::guid::{Guid};
 use rshellitems::shellitem::{ShellItem};
+use rshellitems::shelllist::{ShellList};
 use lnkpkg::locationinfo::{LocationInfo};
 use lnkpkg::datablocks::{ExtraDataBlocks};
 use lnkpkg::flags::{DataFlags,FileFlags};
@@ -10,6 +11,7 @@ use lnkpkg::errors::{LnkError};
 use lnkpkg::utils;
 use std::io::Read;
 use std::io::Seek;
+use std::io::Cursor;
 
 #[derive(Serialize,Debug)]
 // 76 bytes long,
@@ -81,27 +83,18 @@ impl ShellLinkHeader {
 #[derive(Serialize,Debug)]
 pub struct TargetIdList {
     pub list_size: u16,
-    pub shell_items: Vec<ShellItem>
+    pub shell_items: ShellList
 }
 
 impl TargetIdList{
     pub fn new<R: Read>(mut reader: R) -> Result<TargetIdList, LnkError> {
         let list_size = reader.read_u16::<LittleEndian>()?;
-        let mut shell_items: Vec<ShellItem> = Vec::new();
+        let mut buffer = vec![0; list_size as usize];
+        reader.read_exact(&mut buffer)?;
 
-        let mut total_read: u16 = 0;
-        while total_read < list_size {
-            let shell_item = ShellItem::new(&mut reader)?;
-            let size = shell_item.get_size();
-            total_read += size;
-
-            if size == 0 {
-                // Null shell item is terminator
-                break
-            }
-
-            shell_items.push(shell_item);
-        }
+        let mut shell_items = ShellList::new(
+            Cursor::new(buffer)
+        )?;
 
         Ok(
             TargetIdList {
@@ -228,5 +221,9 @@ impl Lnk {
                 extra_data: extra_data
             }
         )
+    }
+
+    fn get_shell_list() {
+
     }
 }
