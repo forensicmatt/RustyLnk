@@ -27,8 +27,11 @@ pub struct ShellLinkHeader {
     pub icon_offset: i32,
     pub window_flag: u32,
     pub hot_key: u16,
+    #[serde(skip_serializing)]
     pub unknown1: u16,
+    #[serde(skip_serializing)]
     pub unknown2: u32,
+    #[serde(skip_serializing)]
     pub unknown3: u32
 }
 impl ShellLinkHeader {
