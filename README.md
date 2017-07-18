@@ -15,46 +15,98 @@ LNK to JSON
     "file_size": 68346,
     "icon_offset": 0,
     "window_flag": 1,
-    "hot_key": 0,
-    "unknown1": 0,
-    "unknown2": 0,
-    "unknown3": 0
+    "hot_key": 0
   },
   "target_list": {
     "list_size": 310,
     "shell_items": [{
-      "size": 20,
       "data": {
-        "class_type": 31,
+        "class_type": "0x1F",
+        "unknown": 72,
+        "content": "BA8F0D4525ADD01198A80800361B1103"
+      }
+    },
+    {
+      "data": {
+        "class_type": "0x31",
+        "unknown": 0,
         "content": {
-          "Raw": "48BA8F0D4525ADD01198A80800361B1103"
+          "sub_flags": "DIRECTORY",
+          "file_size": 0,
+          "last_modification": "2012-03-12 21:27:04.000",
+          "flags": "FILE_ATTRIBUTE_DIRECTORY",
+          "name": "ALLOYR~1",
+          "extention_block": {
+            "header": {
+              "version": 3,
+              "signature": "0xBEEF0004"
+            },
+            "content": {
+              "creation": "2012-03-09 17:41:52.000",
+              "last_access": "2012-03-16 20:03:22.000",
+              "identifier": 20,
+              "long_string_size": 0,
+              "name": "Alloy Research",
+              "long_name": null,
+              "version_offset": 24
+            }
+          }
         }
       }
     },
     {
-      "size": 76,
       "data": {
-        "class_type": 49,
+        "class_type": "0x31",
+        "unknown": 0,
         "content": {
-          "Raw": "00000000006C4062AB1000414C4C4F59527E310000340003000400EFBE69403A8D70406BA01400000041006C006C006F00790020005200650073006500610072006300680000001800"
+          "sub_flags": "DIRECTORY",
+          "file_size": 0,
+          "last_modification": "2012-03-16 20:03:36.000",
+          "flags": "FILE_ATTRIBUTE_DIRECTORY",
+          "name": "DETAIL~1",
+          "extention_block": {
+            "header": {
+              "version": 3,
+              "signature": "0xBEEF0004"
+            },
+            "content": {
+              "creation": "2012-03-08 22:10:52.000",
+              "last_access": "2012-03-16 20:03:36.000",
+              "identifier": 20,
+              "long_string_size": 0,
+              "name": "Detailed Documents",
+              "long_name": null,
+              "version_offset": 24
+            }
+          }
         }
       }
     },
     {
-      "size": 84,
       "data": {
-        "class_type": 49,
+        "class_type": "0x32",
+        "unknown": 0,
         "content": {
-          "Raw": "0000000000704072A0100044455441494C7E3100003C0003000400EFBE68405AB1704072A014000000440065007400610069006C0065006400200044006F00630075006D0065006E007400730000001800"
-        }
-      }
-    },
-    {
-      "size": 128,
-      "data": {
-        "class_type": 50,
-        "content": {
-          "Raw": "00FA0A010068406EB12000434F50594F467E312E584C530000640003000400EFBE68406EB1704070A01400000043006F007000790020006F00660020004D006500740061006C00200041006C006C006F00790020004C006900730074002000520065007300650061007200630068002E0078006C007300780000001C00"
+          "sub_flags": "FILE",
+          "file_size": 68346,
+          "last_modification": "2012-03-08 22:11:28.000",
+          "flags": "FILE_ATTRIBUTE_ARCHIVE",
+          "name": "COPYOF~1.XLS",
+          "extention_block": {
+            "header": {
+              "version": 3,
+              "signature": "0xBEEF0004"
+            },
+            "content": {
+              "creation": "2012-03-08 22:11:28.000",
+              "last_access": "2012-03-16 20:03:32.000",
+              "identifier": 20,
+              "long_string_size": 0,
+              "name": "Copy of Metal Alloy List Research.xlsx",
+              "long_name": null,
+              "version_offset": 28
+            }
+          }
         }
       }
     }]
