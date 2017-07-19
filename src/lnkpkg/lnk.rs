@@ -1,7 +1,6 @@
 use byteorder::{ReadBytesExt, LittleEndian};
 use rwinstructs::timestamp::{WinTimestamp};
 use rwinstructs::guid::{Guid};
-use rshellitems::shellitem::{ShellItem};
 use rshellitems::shelllist::{ShellList};
 use lnkpkg::locationinfo::{LocationInfo};
 use lnkpkg::datablocks::{ExtraDataBlocks};
@@ -95,7 +94,7 @@ impl TargetIdList{
         let mut buffer = vec![0; list_size as usize];
         reader.read_exact(&mut buffer)?;
 
-        let mut shell_items = ShellList::new(
+        let shell_items = ShellList::new(
             Cursor::new(buffer)
         )?;
 
@@ -224,9 +223,5 @@ impl Lnk {
                 extra_data: extra_data
             }
         )
-    }
-
-    fn get_shell_list() {
-
     }
 }
