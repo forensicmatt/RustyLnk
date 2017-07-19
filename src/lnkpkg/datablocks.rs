@@ -29,7 +29,7 @@ pub struct ShimLayerProperties {
 }
 impl ShimLayerProperties {
     pub fn new<R: Read>(mut reader: R) -> Result<ShimLayerProperties,LnkError> {
-        let name = utils::read_string_u16_till_null(reader)?;
+        let name = utils::read_string_u16_till_null(&mut reader)?;
 
         Ok (
             ShimLayerProperties {
