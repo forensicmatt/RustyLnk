@@ -151,6 +151,7 @@ impl Codepage {
 
 #[derive(Serialize,Debug)]
 pub struct DistributedTracker {
+    #[serde(skip_serializing)]
     size: u32,
     version: u32,
     machine_id: String, // 16 bytes (ascii)

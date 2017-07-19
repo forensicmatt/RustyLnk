@@ -9,14 +9,20 @@ use std::io::Seek;
 pub struct NetworkShareInfo {
     pub size: u32,
     pub flags: u32,
+    #[serde(skip_serializing)]
     pub offset_share_name: u32,
+    #[serde(skip_serializing)]
     pub offset_device_name: u32,
     pub provider_type: u32,
+    #[serde(skip_serializing)]
     pub offset_share_name_unicode: Option<u32>,
+    #[serde(skip_serializing)]
     pub offset_device_name_unicode: Option<u32>,
     pub share_name: String,
     pub device_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub share_name_unicode: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub device_name_unicode: Option<String>
 }
 impl NetworkShareInfo {
