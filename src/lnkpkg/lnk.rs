@@ -9,12 +9,14 @@ use lnkpkg::flags;
 use lnkpkg::errors::{LnkError};
 use lnkpkg::utils;
 use std::io::Read;
-use std::io::Seek;
+use std::io::{Seek,SeekFrom};
 use std::io::Cursor;
 
 #[derive(Serialize,Debug)]
 // 76 bytes long,
 pub struct ShellLinkHeader {
+    #[serde(skip_serializing)]
+    _offset: u64,
     pub header_size: u32,
     pub guid: Guid,
     pub data_flags: DataFlags,
@@ -34,7 +36,8 @@ pub struct ShellLinkHeader {
     pub unknown3: u32
 }
 impl ShellLinkHeader {
-    pub fn new<R: Read>(mut reader: R) -> Result<ShellLinkHeader,LnkError> {
+    pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<ShellLinkHeader,LnkError> {
+        let _offset = reader.seek(SeekFrom::Current(0))?;
         let header_size = reader.read_u32::<LittleEndian>()?;
         let mut guid = Guid([0; 16]);
         reader.read_exact(&mut guid.0)?;
@@ -59,6 +62,7 @@ impl ShellLinkHeader {
 
         Ok(
             ShellLinkHeader {
+                _offset: _offset,
                 header_size: header_size,
                 guid: guid,
                 data_flags: data_flags,
@@ -84,12 +88,15 @@ impl ShellLinkHeader {
 
 #[derive(Serialize,Debug)]
 pub struct TargetIdList {
+    #[serde(skip_serializing)]
+    _offset: u64,
     pub list_size: u16,
     pub shell_items: ShellList
 }
 
 impl TargetIdList{
-    pub fn new<R: Read>(mut reader: R) -> Result<TargetIdList, LnkError> {
+    pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<TargetIdList, LnkError> {
+        let _offset = reader.seek(SeekFrom::Current(0))?;
         let list_size = reader.read_u16::<LittleEndian>()?;
         let mut buffer = vec![0; list_size as usize];
         reader.read_exact(&mut buffer)?;
@@ -100,6 +107,7 @@ impl TargetIdList{
 
         Ok(
             TargetIdList {
+                _offset: _offset,
                 list_size: list_size,
                 shell_items: shell_items
             }

@@ -12,7 +12,7 @@ pub struct ShellItemIds {
     shell_items: ShellList
 }
 impl ShellItemIds {
-    pub fn new<R: Read>(mut reader: R) -> Result<ShellItemIds,LnkError> {
+    pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<ShellItemIds,LnkError> {
         let shell_items = ShellList::new(&mut reader)?;
 
         Ok (
