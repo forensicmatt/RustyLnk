@@ -1,6 +1,6 @@
 extern crate rustylnk;
 use rustylnk::lnkpkg::lnk;
-
+use std::io::Cursor;
 #[test]
 fn lnk_header_test() {
     let header_buffer: &[u8] = &[
@@ -11,7 +11,7 @@ fn lnk_header_test() {
         0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
     ];
 
-    let lnk_header = match lnk::ShellLinkHeader::new(header_buffer) {
+    let lnk_header = match lnk::ShellLinkHeader::new(Cursor::new(header_buffer)) {
         Ok(header) => header,
         Err(error) => panic!(error)
     };
