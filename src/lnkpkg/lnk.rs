@@ -204,17 +204,14 @@ impl Lnk {
 
         let mut target_list = None;
         if header_flags.contains(flags::HAS_TARGET_ID_LIST) {
-            // println!("target_list starting offset: {}",reader.seek(SeekFrom::Current(0))?);
             target_list = Some(TargetIdList::new(&mut reader)?);
         }
 
         let mut location_info = None;
         if header_flags.contains(flags::HAS_LINK_INFO) {
-            // println!("location_info starting offset: {}",reader.seek(SeekFrom::Current(0))?);
             location_info = Some(LocationInfo::new(&mut reader)?);
         }
 
-        // println!("data_strings starting offset: {}",reader.seek(SeekFrom::Current(0))?);
         let data_strings = DataStrings::new(
             &mut reader,
             header_flags
