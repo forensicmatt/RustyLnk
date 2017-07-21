@@ -10,7 +10,6 @@ use lnkpkg::errors::{LnkError};
 use lnkpkg::utils;
 use std::io::Read;
 use std::io::{Seek,SeekFrom};
-use std::io::Cursor;
 
 #[derive(Serialize,Debug)]
 // 76 bytes long,
@@ -98,11 +97,9 @@ impl TargetIdList{
     pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<TargetIdList, LnkError> {
         let _offset = reader.seek(SeekFrom::Current(0))?;
         let list_size = reader.read_u16::<LittleEndian>()?;
-        let mut buffer = vec![0; list_size as usize];
-        reader.read_exact(&mut buffer)?;
 
         let shell_items = ShellList::new(
-            Cursor::new(buffer)
+            &mut reader
         )?;
 
         Ok(
@@ -217,7 +214,9 @@ impl Lnk {
             header_flags
         )?;
 
-        let extra_data = ExtraDataBlocks::new(&mut reader)?;
+        let extra_data = ExtraDataBlocks::new(
+            &mut reader
+        )?;
 
         Ok(
             Lnk {
