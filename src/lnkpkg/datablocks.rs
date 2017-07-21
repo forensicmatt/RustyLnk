@@ -390,8 +390,12 @@ impl ExtraDataBlocks {
                         shell_item_ids = Some(ShellItemIds::new(&mut reader)?);
                     },
                     _ => {
-                        let mut unknown_block_buffer = vec![0; size as usize];
-                        reader.read_exact(unknown_block_buffer.as_mut_slice())?;
+                        // subtract 8 from buffer size. account for size(4), signature(4)
+                        let mut unknown_block_buffer = vec![0; (size - 8) as usize];
+                        reader.read_exact(
+                            unknown_block_buffer.as_mut_slice()
+                        )?;
+
                         let unknown_block = UnhandledDataBlock {
                             signature: format!("0x{:04X}",signature),
                             buffer: utils::ByteArray(unknown_block_buffer)
