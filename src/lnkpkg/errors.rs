@@ -19,8 +19,7 @@ pub struct LnkError {
     pub message: String,
     // The type of error
     pub kind: ErrorKind,
-    // Any additional information passed along, such as the argument name that caused the error
-    pub info: Option<Vec<String>>,
+    pub trace: String
 }
 
 impl LnkError {
@@ -29,7 +28,7 @@ impl LnkError {
         LnkError {
             message: format!("{}",err),
             kind: ErrorKind::Utf16Error,
-            info: Some(vec![]),
+            trace: backtrace!()
         }
     }
 }
@@ -39,7 +38,7 @@ impl From<FromUtf8Error> for LnkError {
         LnkError {
             message: format!("{}",err),
             kind: ErrorKind::FromUtf8Error,
-            info: None,
+            trace: backtrace!()
         }
     }
 }
@@ -48,7 +47,7 @@ impl From<ShellItemError> for LnkError {
         LnkError {
             message: format!("{}",err.message),
             kind: ErrorKind::ShellItemError,
-            info: err.info
+            trace: format!("{}",err.trace)
         }
     }
 }
@@ -57,11 +56,17 @@ impl From<io::Error> for LnkError {
         LnkError {
             message: format!("{}",err),
             kind: ErrorKind::IoError,
-            info: None,
+            trace: backtrace!()
         }
     }
 }
 
 impl Display for LnkError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { writeln!(f, "{}", self.message) }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(
+            f,
+            "message: {}\nkind: {:?}\n{}",
+            self.message, self.kind, self.trace
+        )
+    }
 }
