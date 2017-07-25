@@ -45,9 +45,7 @@ LNK to JSON
               "creation": "2012-03-09 17:41:52.000",
               "last_access": "2012-03-16 20:03:22.000",
               "identifier": 20,
-              "long_string_size": 0,
               "name": "Alloy Research",
-              "long_name": null,
               "version_offset": 24
             }
           }
@@ -73,9 +71,7 @@ LNK to JSON
               "creation": "2012-03-08 22:10:52.000",
               "last_access": "2012-03-16 20:03:36.000",
               "identifier": 20,
-              "long_string_size": 0,
               "name": "Detailed Documents",
-              "long_name": null,
               "version_offset": 24
             }
           }
@@ -101,9 +97,7 @@ LNK to JSON
               "creation": "2012-03-08 22:11:28.000",
               "last_access": "2012-03-16 20:03:32.000",
               "identifier": 20,
-              "long_string_size": 0,
               "name": "Copy of Metal Alloy List Research.xlsx",
-              "long_name": null,
               "version_offset": 28
             }
           }
@@ -112,36 +106,13 @@ LNK to JSON
     }]
   },
   "location_info": {
-    "info_size": 166,
-    "header_size": 28,
-    "flags": 1,
-    "offset_vol_info": 28,
-    "offset_loc_path": 45,
-    "offset_net_share": 0,
-    "offset_common_path": 165,
+    "flags": "VolumeIDAndLocalBasePath",
     "volume_info": {
-      "vi_size": 17,
-      "drive_type": 3,
-      "serial_number": 538397730,
-      "offset_vol_label": 16,
-      "offset_vol_label_unicode": null,
-      "volume_label": "",
-      "volume_label_unicode": null
+      "drive_type": "DRIVE_FIXED",
+      "serial_number": "2017-4C22",
+      "volume_label": ""
     },
     "local_path": "C:\\Documents and Settings\\tdungan\\My Documents\\Alloy Research\\Detailed Documents\\Copy of Metal Alloy List Research.xlsx",
-    "netshare_info": {
-      "size": 166,
-      "flags": 28,
-      "offset_share_name": 1,
-      "offset_device_name": 28,
-      "provider_type": 45,
-      "offset_share_name_unicode": null,
-      "offset_device_name_unicode": null,
-      "share_name": "",
-      "device_name": "\u0011",
-      "share_name_unicode": null,
-      "device_name_unicode": null
-    },
     "common_path": ""
   },
   "data_strings": {
@@ -153,7 +124,6 @@ LNK to JSON
   },
   "extra_data": {
     "distributed_tracker": {
-      "size": 88,
       "version": 0,
       "machine_id": "wks-winxp32bit",
       "droid_volume": "79CBEB4E-F29D-4A0C-A70E-E5647A53970B",
