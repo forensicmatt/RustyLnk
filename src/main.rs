@@ -13,12 +13,25 @@ use rustylnk::lnkpkg::lnk::{Lnk};
 use std::fs;
 
 fn process_directory(directory: &str, options: &ArgMatches) {
-    for entry in fs::read_dir(directory).unwrap() {
-        let entry = entry.unwrap();
-        let path = entry.path();
-        if path.is_file() {
-            let path_string = path.into_os_string().into_string().unwrap();
-            process_file(&path_string, &options);
+    for dir_reader in fs::read_dir(directory) {
+        for entry_result in dir_reader {
+            match entry_result {
+                Ok(entry) => {
+                    let path = entry.path();
+                    if path.is_file() {
+                        let path_string = path.into_os_string().into_string().unwrap();
+                        if path_string.to_lowercase().ends_with(".lnk"){
+                            process_file(&path_string, &options);
+                        }
+                    } else if path.is_dir(){
+                        let path_string = path.into_os_string().into_string().unwrap();
+                        process_directory(&path_string, &options);
+                    }
+                },
+                Err(error) => {
+                    error!("Error reading {} [{:?}]",directory,error);
+                }
+            }
         }
     }
 }
@@ -52,7 +65,7 @@ fn process_file(filename: &str, options: &ArgMatches) -> bool {
     let lnk = match Lnk::new(reader) {
         Ok(lnk) => lnk,
         Err(error) => {
-            error!("Could not parse file: {} [error: {}]", filename, error);
+            error!("Could not parse file: {} [{}]", filename, error);
             return false;
         }
     };
