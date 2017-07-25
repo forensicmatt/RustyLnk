@@ -131,7 +131,7 @@ fn main() {
 
     let options = App::new("RusyLnk")
         .version("0.1.0")
-        .author("Matthew Seyer <https://github.com/forensicmatt/RustyUsn>")
+        .author("Matthew Seyer <https://github.com/forensicmatt/RustyLnk>")
         .about("LNK Parser written in Rust.")
         .arg(source_arg)
         .arg(jmes_arg)
