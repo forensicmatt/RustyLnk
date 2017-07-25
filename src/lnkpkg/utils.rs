@@ -4,9 +4,23 @@ use encoding::{Encoding, DecoderTrap};
 use lnkpkg::errors::{LnkError};
 use serde::{ser};
 use std::io::Read;
+use std::io::{Seek,SeekFrom};
 use std::io::Error;
 use std::slice;
 use std::fmt;
+
+pub fn get_reader_size<Rs: Read+Seek>(mut reader: Rs) -> Result<u64,LnkError>{
+    // Seek to end to get offset
+    let end_offset = reader.seek(
+        SeekFrom::End(0)
+    )?;
+    // Seek back to start of reader
+    reader.seek(
+        SeekFrom::Start(0)
+    )?;
+    
+    Ok(end_offset)
+}
 
 pub struct ByteArray(pub Vec<u8>);
 impl fmt::Debug for ByteArray {
