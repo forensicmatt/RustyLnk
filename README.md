@@ -1,5 +1,24 @@
 # RustyLnk
-LNK to JSON
+A fast and cross platform LNK Parser written in Rust that gives you the ability to query the records via JMESPath queries. Output is JSONL.
+
+```
+RusyLnk 0.1.0
+Matthew Seyer <https://github.com/forensicmatt/RustyLnk>
+LNK Parser written in Rust.
+
+USAGE:
+    RustyLnk.exe [FLAGS] [OPTIONS]
+
+FLAGS:
+    -b, --bool_expr    JMES Query as bool only. (Prints whole record if true.)
+    -h, --help         Prints help information
+    -V, --version      Prints version information
+
+OPTIONS:
+    -q, --query <QUERY>    JMES Query
+    -s, --source <PATH>    The LNK file or folder with LNK files to parse.
+
+```
 
 ### Example Output
 ```json
