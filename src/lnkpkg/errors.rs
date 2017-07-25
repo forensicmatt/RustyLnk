@@ -9,7 +9,8 @@ pub enum ErrorKind {
     IoError,
     ShellItemError,
     FromUtf8Error,
-    Utf16Error
+    Utf16Error,
+    ValidationError
 }
 
 // Lnk Parsing Error
@@ -28,6 +29,15 @@ impl LnkError {
         LnkError {
             message: format!("{}",err),
             kind: ErrorKind::Utf16Error,
+            trace: backtrace!()
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn validation_error(err: String)->Self{
+        LnkError {
+            message: format!("{}",err),
+            kind: ErrorKind::ValidationError,
             trace: backtrace!()
         }
     }
@@ -63,10 +73,21 @@ impl From<io::Error> for LnkError {
 
 impl Display for LnkError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(
-            f,
-            "message: {}\nkind: {:?}\n{}",
-            self.message, self.kind, self.trace
-        )
+        match self.kind {
+            ErrorKind::ValidationError => {
+                write!(
+                    f,
+                    "{:?}: {}",
+                    self.kind,self.message
+                )
+            },
+            _ => {
+                write!(
+                    f,
+                    "message: {}\nkind: {:?}\n{}",
+                    self.message, self.kind, self.trace
+                )
+            }
+        }
     }
 }
