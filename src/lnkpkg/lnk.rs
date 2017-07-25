@@ -13,7 +13,7 @@ use std::io::{Seek,SeekFrom};
 
 #[derive(Serialize,Debug)]
 // 76 bytes long,
-pub struct ShellLinkHeader {
+pub struct LnkHeader {
     #[serde(skip_serializing)]
     _offset: u64,
     pub header_size: u32,
@@ -34,12 +34,32 @@ pub struct ShellLinkHeader {
     #[serde(skip_serializing)]
     pub unknown3: u32
 }
-impl ShellLinkHeader {
-    pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<ShellLinkHeader,LnkError> {
+impl LnkHeader {
+    pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<LnkHeader,LnkError> {
         let _offset = reader.seek(SeekFrom::Current(0))?;
         let header_size = reader.read_u32::<LittleEndian>()?;
+        if header_size != 76 {
+            return Err(
+                LnkError::validation_error(
+                    format!("Header size unhandled. Got {}, expected 76.",header_size)
+                )
+            );
+        }
+
         let mut guid = Guid([0; 16]);
         reader.read_exact(&mut guid.0)?;
+
+        // Do a GUID check
+        if guid.to_string() != "00021401-0000-0000-C000-000000000046" {
+            return Err(
+                LnkError::validation_error(
+                    format!(
+                        "GUID {} is not the known LNK GUID of 00021401-0000-0000-C000-000000000046",
+                        guid.to_string()
+                    )
+                )
+            );
+        }
 
         let data_flags = DataFlags::from_bits_truncate(
             reader.read_u32::<LittleEndian>()?
@@ -60,7 +80,7 @@ impl ShellLinkHeader {
         let unknown3 = reader.read_u32::<LittleEndian>()?;
 
         Ok(
-            ShellLinkHeader {
+            LnkHeader {
                 _offset: _offset,
                 header_size: header_size,
                 guid: guid,
@@ -187,7 +207,7 @@ impl DataStrings {
 
 #[derive(Serialize,Debug)]
 pub struct Lnk {
-    pub header: ShellLinkHeader,
+    pub header: LnkHeader,
     pub target_list: Option<TargetIdList>,
     pub location_info: Option<LocationInfo>,
     pub data_strings: DataStrings,
@@ -196,7 +216,21 @@ pub struct Lnk {
 
 impl Lnk {
     pub fn new<Rs: Read+Seek>(mut reader: Rs) -> Result<Lnk,LnkError> {
-        let header = ShellLinkHeader::new(&mut reader)?;
+        // Check reader size
+        let reader_size = utils::get_reader_size(
+            &mut reader
+        )?;
+        if reader_size < 76 {
+            return Err(
+                LnkError::validation_error(
+                    format!("File size of {} is less than 76.",reader_size)
+                )
+            );
+        }
+
+        let header = LnkHeader::new(
+            &mut reader
+        )?;
         let header_flags = header.get_data_flags();
 
         let mut target_list = None;
