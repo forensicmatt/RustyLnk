@@ -134,7 +134,7 @@ fn main() {
         .help("JMES Query as bool only. (Prints whole record if true.)");
 
     let options = App::new("RusyLnk")
-        .version("0.1.0")
+        .version("0.1.1")
         .author("Matthew Seyer <https://github.com/forensicmatt/RustyLnk>")
         .about("LNK Parser written in Rust.")
         .arg(source_arg)
