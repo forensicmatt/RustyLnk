@@ -3,9 +3,12 @@ extern crate env_logger;
 extern crate rustylnk;
 extern crate clap;
 extern crate seek_bufread;
+extern crate rwinstructs;
 extern crate jmespath;
 extern crate serde_json;
 extern crate serde;
+use rwinstructs::reference;
+use rwinstructs::serialize;
 use clap::{App, Arg, ArgMatches};
 use jmespath::{Expression};
 use seek_bufread::BufReader;
@@ -114,7 +117,8 @@ fn main() {
         .short("s")
         .long("source")
         .value_name("PATH")
-        .help("The LNK file or folder with LNK files to parse.")
+        .help("A file or folder to to parse lnk files (looks for .lnk extention and is recursive)")
+        .required(true)
         .takes_value(true);
 
     let jmes_arg = Arg::with_name("query")
@@ -137,6 +141,10 @@ fn main() {
         .arg(jmes_arg)
         .arg(bool_arg)
         .get_matches();
+
+    // Set Reference Display Options
+    unsafe{reference::NESTED_REFERENCE = true;}
+    unsafe{serialize::U64_SERIALIZATION = serialize::U64Serialization::AsString;}
 
     let source = options.value_of("source").unwrap();
 
