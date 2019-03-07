@@ -4,8 +4,7 @@ use rwinstructs::guid::{Guid};
 use rshellitems::shelllist::{ShellList};
 use lnkpkg::locationinfo::{LocationInfo};
 use lnkpkg::datablocks::{ExtraDataBlocks};
-use lnkpkg::flags::{DataFlags,FileFlags};
-use lnkpkg::flags;
+use lnkpkg::flags::{DataFlags, FileFlags};
 use lnkpkg::errors::{LnkError};
 use lnkpkg::utils;
 use std::io::Read;
@@ -146,10 +145,10 @@ pub struct DataStrings {
 }
 impl DataStrings {
     pub fn new<R: Read>(mut reader: R, data_flags: DataFlags) -> Result<DataStrings,LnkError> {
-        let unicode_flag = data_flags.contains(flags::IS_UNICODE);
+        let unicode_flag = data_flags.contains(DataFlags::IS_UNICODE);
 
         let mut description = None;
-        if data_flags.contains(flags::HAS_NAME) {
+        if data_flags.contains(DataFlags::HAS_NAME) {
             if unicode_flag {
                 description = Some(utils::read_string_u16_w_size(&mut reader)?);
             } else {
@@ -158,7 +157,7 @@ impl DataStrings {
         }
 
         let mut relative_path = None;
-        if data_flags.contains(flags::HAS_RELATIVE_PATH) {
+        if data_flags.contains(DataFlags::HAS_RELATIVE_PATH) {
             if unicode_flag {
                 relative_path = Some(utils::read_string_u16_w_size(&mut reader)?);
             } else {
@@ -167,7 +166,7 @@ impl DataStrings {
         }
 
         let mut working_directory = None;
-        if data_flags.contains(flags::HAS_WORKING_DIR) {
+        if data_flags.contains(DataFlags::HAS_WORKING_DIR) {
             if unicode_flag {
                 working_directory = Some(utils::read_string_u16_w_size(&mut reader)?);
             } else {
@@ -176,7 +175,7 @@ impl DataStrings {
         }
 
         let mut command_line_args = None;
-        if data_flags.contains(flags::HAS_ARGUMENTS) {
+        if data_flags.contains(DataFlags::HAS_ARGUMENTS) {
             if unicode_flag {
                 command_line_args = Some(utils::read_string_u16_w_size(&mut reader)?);
             } else {
@@ -185,7 +184,7 @@ impl DataStrings {
         }
 
         let mut icon_location = None;
-        if data_flags.contains(flags::HAS_ICON_LOCATION) {
+        if data_flags.contains(DataFlags::HAS_ICON_LOCATION) {
             if unicode_flag {
                 icon_location = Some(utils::read_string_u16_w_size(&mut reader)?);
             } else {
@@ -234,14 +233,14 @@ impl Lnk {
         let header_flags = header.get_data_flags();
 
         let mut target_list = None;
-        if header_flags.contains(flags::HAS_TARGET_ID_LIST) {
+        if header_flags.contains(DataFlags::HAS_TARGET_ID_LIST) {
             target_list = Some(
                 TargetIdList::new(&mut reader)?
             );
         }
 
         let mut location_info = None;
-        if header_flags.contains(flags::HAS_LINK_INFO) {
+        if header_flags.contains(DataFlags::HAS_LINK_INFO) {
             location_info = Some(
                 LocationInfo::new(&mut reader)?
             );

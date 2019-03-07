@@ -73,7 +73,7 @@ impl LocationInfo {
         let mut common_path = None;
         let mut netshare_info = None;
 
-        if flags.contains(VolumeIDAndLocalBasePath) {
+        if flags.contains(LocationInfoFalgs::VolumeIDAndLocalBasePath) {
             // read volume_info
             reader.seek(
                 SeekFrom::Start(_offset + offset_vol_info as u64)
@@ -98,7 +98,7 @@ impl LocationInfo {
                 utils::read_string_u8_till_null(&mut reader)?
             );
         }
-        if flags.contains(CommonNetworkRelativeLinkAndPathSuffix) {
+        if flags.contains(LocationInfoFalgs::CommonNetworkRelativeLinkAndPathSuffix) {
             // read netshare info
             reader.seek(
                 SeekFrom::Start(_offset + offset_net_share as u64)
